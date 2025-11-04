@@ -27,7 +27,7 @@ function readFileUsingBuffer(filePath, callback) {
       memoryUsed: formatBytes(endMemory - startMemory),
     };
 
-    console.log("\n--- Reading with fs.readFile (Buffer) ---");
+    console.log("\nReading with fs.readFile (Buffer) :");
     console.log(result);
     callback(result);
   });
@@ -55,7 +55,7 @@ function readFileUsingStream(filePath, callback) {
       memoryUsed: formatBytes(endMemory - startMemory),
     };
 
-    console.log("\n--- Reading with fs.createReadStream (Stream) ---");
+    console.log("\n Reading with fs.createReadStream (Stream) :");
     console.log(result);
     callback(result);
   });
@@ -76,7 +76,7 @@ readFileUsingBuffer(filePath, (bufferResult) => {
 
       // Write both results to logs/day1-perf.json
       fs.writeFileSync("logs/day1-perf.json", JSON.stringify(results, null, 2));
-      console.log("\n✅ Results saved to logs/day1-perf.json");
+      console.log("\n Results saved to logs/day1-perf.json");
     });
   }, 3000);
 });
