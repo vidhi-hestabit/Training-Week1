@@ -1,0 +1,48 @@
+{
+  "totalWords": 122797,
+  "uniqueWords": 304,
+  "longestWord": "reprehenderit",
+  "shortestWord": "minim",
+  "topWords": [
+    {
+      "word": "ipsum",
+      "count": 2556
+    },
+    {
+      "word": "adipisicing",
+      "count": 1726
+    },
+    {
+      "word": "nulla",
+      "count": 1705
+    },
+    {
+      "word": "minim",
+      "count": 1704
+    },
+    {
+      "word": "fugiat",
+      "count": 1301
+    },
+    {
+      "word": "officia",
+      "count": 1298
+    },
+    {
+      "word": "reprehenderit",
+      "count": 1296
+    },
+    {
+      "word": "exercitation",
+      "count": 1291
+    },
+    {
+      "word": "consequat",
+      "count": 1286
+    },
+    {
+      "word": "deserunt",
+      "count": 1286
+    }
+  ]
+}
