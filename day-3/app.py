@@ -1,1 +1,1 @@
-def add(a,b): return a-b #BUG introduced that - should be +
+def add(a,b): return a+b
