@@ -1,0 +1,21 @@
+Server:		127.0.0.53
+Address:	127.0.0.53#53
+
+Non-authoritative answer:
+Name:	dummyjson.com
+Address: 104.21.61.23
+Name:	dummyjson.com
+Address: 172.67.205.42
+Name:	dummyjson.com
+Address: 2606:4700:3033::6815:3d17
+Name:	dummyjson.com
+Address: 2606:4700:3031::ac43:cd2a
+
+traceroute to dummyjson.com (104.21.61.23), 30 hops max, 60 byte packets
+ 1  _gateway (10.10.0.1)  4.431 ms  4.693 ms  4.671 ms
+ 2  203.122.42.45.reverse.spectranet.in (203.122.42.45)  7.936 ms  6.272 ms  5.822 ms
+ 3  * * *
+ 4  203.122.50.89.reverse.spectranet.in (203.122.50.89)  7.768 ms  6.148 ms  7.726 ms
+ 5  * as13335.del.extreme-ix.net (45.120.248.27)  18.629 ms *
+ 6  104.23.231.30 (104.23.231.30)  11.532 ms  5.536 ms  6.068 ms
+ 7  104.21.61.23 (104.21.61.23)  6.009 ms  5.990 ms  5.970 ms

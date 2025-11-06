@@ -1,14 +1,14 @@
 [
   {
     "concurrency": 1,
-    "duration": 18
+    "duration": 29
   },
   {
     "concurrency": 4,
-    "duration": 9
+    "duration": 25
   },
   {
     "concurrency": 8,
-    "duration": 8
+    "duration": 25
   }
 ]

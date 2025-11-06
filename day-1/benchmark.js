@@ -12,13 +12,13 @@ function formatBytes(bytes) {
 
 function readFileUsingBuffer(filePath, callback) {
   const startTime = Date.now();
-  const startMemory = process.memoryUsage().heapUsed;
+  const startMemory = process.memoryUsage().rss;
 
   fs.readFile(filePath, (err, data) => {
     if (err) throw err;
 
     const endTime = Date.now();
-    const endMemory = process.memoryUsage().heapUsed;
+    const endMemory = process.memoryUsage().rss;
 
     const result = {
       method: "fs.readFile (Buffer)",
@@ -35,7 +35,7 @@ function readFileUsingBuffer(filePath, callback) {
 
 function readFileUsingStream(filePath, callback) {
   const startTime = Date.now();
-  const startMemory = process.memoryUsage().heapUsed;
+  const startMemory = process.memoryUsage().rss;
 
   let totalBytes = 0;
   const stream = fs.createReadStream(filePath);
@@ -46,7 +46,7 @@ function readFileUsingStream(filePath, callback) {
 
   stream.on("end", () => {
     const endTime = Date.now();
-    const endMemory = process.memoryUsage().heapUsed;
+    const endMemory = process.memoryUsage().rss;
 
     const result = {
       method: "fs.createReadStream (Stream)",
@@ -63,7 +63,7 @@ function readFileUsingStream(filePath, callback) {
   stream.on("error", (err) => console.error(err));
 }
 
-const filePath = "./testfile.txt";
+const filePath = "./textfile.txt";
 const results = [];
 
 readFileUsingBuffer(filePath, (bufferResult) => {
