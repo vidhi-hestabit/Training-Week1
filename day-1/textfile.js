@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { loremIpsum } = require('lorem-ipsum');
 
-const targetBytes = 500 * 1024 * 1024; // 50 MB
+const targetBytes = 50 * 1024 * 1024; // 50 MB
 let currentBytes = 0;
 
 const stream = fs.createWriteStream('textfile.txt', { flags: 'w' });

@@ -159,6 +159,43 @@ Node Path: /home/vidhiajmera/.nvm/versions/node/v24.11.0/bin/node
 ```bash
 fallocate -l 50M testfile.txt
 ls -lh testfile.txt
+
+-------------------Another way---------------------
+
+
+```javascript
+
+const fs = require('fs');
+const { loremIpsum } = require('lorem-ipsum');
+
+const targetBytes = 500 * 1024 * 1024; // 50 MB
+let currentBytes = 0;
+
+const stream = fs.createWriteStream('textfile.txt', { flags: 'w' });
+
+while (currentBytes < targetBytes) {
+  const chunk = loremIpsum({
+    count: 1000, // words per chunk
+    units: 'words',
+    format: 'plain'
+  }) + ' ';
+
+  const chunkBytes = Buffer.byteLength(chunk, 'utf8');
+
+  // Write only the amount needed to reach target size
+  if (currentBytes + chunkBytes > targetBytes) {
+    const remainingBytes = targetBytes - currentBytes;
+    stream.write(chunk.slice(0, remainingBytes));
+    currentBytes += remainingBytes;
+  } else {
+    stream.write(chunk);
+    currentBytes += chunkBytes;
+  }
+}
+
+stream.end();
+console.log('Generated textfile.txt with approximately 50 MB');
+
 ```
 ![alt text](<Screenshot from 2025-11-03 19-08-22.png>)
 
