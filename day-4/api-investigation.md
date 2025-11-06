@@ -204,15 +204,15 @@ server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT
 ```bash
 curl -v http://localhost:3000/echo
 
-![alt text](image.png)
+![alt text](<Screenshot from 2025-11-06 14-26-17.png>)
 
 curl -v http://localhost:3000/slow?ms=3000
 
-![alt text](image-1.png)
+![alt text](<Screenshot from 2025-11-06 14-26-57.png>)
 
 curl -v http://localhost:3000/cache
 
-![alt text](image-2.png)
+![alt text](<Screenshot from 2025-11-06 14-27-21.png>)
 
 
 ```
