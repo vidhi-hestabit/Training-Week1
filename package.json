@@ -1,0 +1,26 @@
+{
+  "name": "week-1",
+  "version": "1.0.0",
+  "scripts": {
+  "lint": "eslint '**/*.js' --fix",
+  "validate": "./validate.sh",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^7.0.0"
+  },
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vidhi-hestabit/Training-Week1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vidhi-hestabit/Training-Week1/issues"
+  },
+  "homepage": "https://github.com/vidhi-hestabit/Training-Week1#readme"
+}

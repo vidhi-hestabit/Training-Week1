@@ -1,25 +1,21 @@
 {
   "name": "day-5",
   "version": "1.0.0",
-  "type": "commonjs",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint 'src/**/*.js' --fix",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
+    "prepare" : "husky install",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "commonjs",
   "devDependencies": {
     "@eslint/json": "^0.14.0",
     "eslint": "^9.39.1",
-    "eslint-config-eslint": "^13.0.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-define-config": "^2.1.0",
     "eslint-plugin-prettier": "^5.5.4",
-    "husky": "^8.0.0",
     "prettier": "^3.6.2"
   }
 }
