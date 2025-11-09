@@ -1,178 +1,167 @@
+#!/usr/bin/env node
 const fs = require('fs');
-const yargs = require('yargs');
 const path = require('path');
+const { Worker, isMainThread, parentPort, workerData } = require('worker_threads');
+const yargs = require('yargs');
 
-// Argument parsing with yargs
+// -------------------------
+// WORKER THREAD CODE
+// -------------------------
+if (!isMainThread) {
+  const { chunk, minLen } = workerData;
+
+  const cleanWord = (word) =>
+    word.toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi, '');
+
+  const wordCounts = Object.create(null);
+  for (const rawWord of chunk) {
+    const word = cleanWord(rawWord);
+    if (word.length >= minLen) {
+      wordCounts[word] = (wordCounts[word] || 0) + 1;
+    }
+  }
+
+  parentPort.postMessage({ wordCounts });
+  return; // Important: prevent yargs/main code from running
+}
+
+// -------------------------
+// MAIN THREAD CODE
+// -------------------------
 const argv = yargs
   .option('file', {
     alias: 'f',
     description: 'Path to the text file',
     type: 'string',
-    demandOption: true, // Ensures the file argument is required
+    demandOption: true,
   })
   .option('top', {
     alias: 't',
     description: 'Top N most repeated words',
     type: 'number',
-    default: 10, // Defaults to top 10 most repeated words
+    default: 10,
   })
   .option('minLen', {
     alias: 'l',
     description: 'Minimum length of words to consider',
     type: 'number',
-    default: 1, // Defaults to considering all words
+    default: 1,
   })
   .option('unique', {
     alias: 'u',
-    description: 'Only count unique words',
+    description: 'Only count unique words (ignored for now)',
     type: 'boolean',
     default: false,
   })
-  .option('concurrency', {
-    description: 'Number of concurrent workers to use',
-    type: 'number',
-    default: 4, // Default concurrency is 4
-  })
-  .help()
+  .help(false)
+  .version(false)
   .argv;
 
-// Read file and process words
-const processFile = (filePath) => {
-  const data = fs.readFileSync(filePath, 'utf-8');
-  return data.split(/\s+/).filter((word) => word.length >= argv.minLen); // Split by spaces and filter by min length
-};
-
-// Function to calculate statistics
-const getStats = (words) => {
-  const totalWords = words.length;
-
-  // Get unique words if required
-  const uniqueWords = [...new Set(words)].length;
-
-  // Calculate word frequencies
-  const wordCounts = {};
-  words.forEach((word) => {
-    word = word.toLowerCase(); // Normalize word to lowercase
-    wordCounts[word] = (wordCounts[word] || 0) + 1;
-  });
-
-  // Sort words by frequency
-  const sortedWords = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]);
-
-  // Get the top N most frequent words
-  const topWords = sortedWords.slice(0, argv.top).map(([word, count]) => ({
-    word,
-    count,
-  }));
-
-  // Find the longest and shortest word
-  const longestWord = words.reduce((longest, word) => word.length > longest.length ? word : longest, "");
-  const shortestWord = words.reduce((shortest, word) => word.length < shortest.length ? word : shortest, longestWord);
-
-  return {
-    totalWords,
-    uniqueWords,
-    longestWord,
-    shortestWord,
-    topWords,
-  };
-};
-
-// Split the file into chunks based on number of words
-const splitFileIntoChunks = (words, chunkSize) => {
+// -------------------------
+// Helper functions
+// -------------------------
+function splitIntoChunks(array, parts) {
+  const size = Math.ceil(array.length / parts);
   const chunks = [];
-  for (let i = 0; i < words.length; i += chunkSize) {
-    chunks.push(words.slice(i, i + chunkSize));
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
   }
   return chunks;
-};
+}
 
-// Process a chunk of words and return the stats
-const processChunk = (chunk) => {
-  return getStats(chunk);
-};
-
-// Run the program with concurrency
-const runWithConcurrency = async (words, concurrencyLevel) => {
-  const chunkSize = Math.ceil(words.length / concurrencyLevel);
-  const chunks = splitFileIntoChunks(words, chunkSize);
-
-  const start = Date.now();
-
-  // Process chunks in parallel using Promise.all
-  const results = await Promise.all(chunks.map(processChunk));
-
-  const end = Date.now();
-  const duration = end - start;
-
-  return { results, duration };
-};
-
-// Output the results to JSON file
-const outputResultsToJSON = (finalStats, perfSummary) => {
-  fs.writeFileSync(path.join(__dirname, 'output', 'stats.json'), JSON.stringify(finalStats, null, 2));
-  fs.writeFileSync(path.join(__dirname, 'logs', 'perf-summary.json'), JSON.stringify(perfSummary, null, 2));
-};
-
-// Main function
-const main = async () => {
-  // Read and process the input file
-  const words = processFile(argv.file); // Read the file and split words
-
-  // Array to store performance results for benchmarking
-  const perfSummary = [];
-  let finalStats;
-
-  // Run the task for each concurrency level and benchmark the performance
-  const concurrencyLevels = [1, 4, 8];
-
-  for (const concurrency of concurrencyLevels) {
-    console.log(`Running with concurrency level: ${concurrency}`);
-
-    const { results, duration } = await runWithConcurrency(words, concurrency);
-
-    // Aggregate the results from all chunks
-    const aggregatedStats = results.reduce((acc, chunkStats) => {
-      acc.totalWords += chunkStats.totalWords;
-      acc.uniqueWords += chunkStats.uniqueWords;
-      acc.topWords = [...acc.topWords, ...chunkStats.topWords];
-      return acc;
-    }, { totalWords: 0, uniqueWords: 0, topWords: [] });
-
-    // Get the top N most frequent words from all chunks
-    const finalTopWords = aggregatedStats.topWords
-      .reduce((acc, word) => {
-        acc[word.word] = (acc[word.word] || 0) + word.count;
-        return acc;
-      }, {});
-
-    finalStats = {
-      totalWords: aggregatedStats.totalWords,
-      uniqueWords: aggregatedStats.uniqueWords,
-      longestWord: words.reduce((longest, word) =>
-        word.length > longest.length ? word : longest
-      ),
-      shortestWord: words.reduce((shortest, word) =>
-        word.length < shortest.length ? word : shortest
-      ),
-      topWords: Object.entries(finalTopWords)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, argv.top)
-        .map(([word, count]) => ({ word, count })),
-    };
-
-    perfSummary.push({
-      concurrency,
-      duration,
+function runWorker(chunk, minLen) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(__filename, { workerData: { chunk, minLen } });
+    worker.on('message', resolve);
+    worker.on('error', reject);
+    worker.on('exit', (code) => {
+      if (code !== 0) reject(new Error(`Worker stopped with code ${code}`));
     });
+  });
+}
+
+async function processWithConcurrency(words, minLen, concurrency) {
+  const chunks = splitIntoChunks(words, concurrency);
+  const start = process.hrtime.bigint();
+
+  const results = await Promise.all(chunks.map(chunk => runWorker(chunk, minLen)));
+
+  const end = process.hrtime.bigint();
+  const durationMs = Number(end - start) / 1_000_000;
+
+  // Merge results
+  const merged = new Map();
+  for (const result of results) {
+    for (const [word, count] of Object.entries(result.wordCounts)) {
+      merged.set(word, (merged.get(word) || 0) + count);
+    }
   }
 
-  // Output results and performance summary to JSON files
-  outputResultsToJSON(finalStats, perfSummary);
+  return { merged, durationMs };
+}
 
-  console.log('Processing complete. Results saved to stats.json and perf-summary.json.');
-};
+function computeStats(wordMap, topN) {
+  const totalWords = Array.from(wordMap.values()).reduce((a, b) => a + b, 0);
+  const uniqueWords = wordMap.size;
+  const allWords = Array.from(wordMap.keys());
+  const longestWord = allWords.reduce((a, b) => (b.length > a.length ? b : a), "");
+  const shortestWord = allWords.reduce((a, b) => (b.length < a.length ? b : a), longestWord);
 
-main().catch((err) => {
-  console.error('Error during processing:', err);
-});
+  const topWords = Array.from(wordMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([word, count]) => ({ word, count }));
+
+  return { totalWords, uniqueWords, longestWord, shortestWord, topWords };
+}
+
+// -------------------------
+// MAIN EXECUTION
+// -------------------------
+(async () => {
+  try {
+    const filePath = argv.file;
+    if (!fs.existsSync(filePath)) {
+      console.error(`❌ File not found: ${filePath}`);
+      process.exit(1);
+    }
+
+    const text = fs.readFileSync(filePath, 'utf-8');
+    const words = text.split(/\s+/).filter(Boolean);
+
+    console.log(`📘 Loaded ${words.length} words from ${filePath}\n`);
+
+    const concurrencyLevels = [1, 4, 8];
+    const perfSummary = [];
+    let finalStats = null;
+
+    for (const concurrency of concurrencyLevels) {
+      console.log(`⚙️ Running with concurrency level: ${concurrency}`);
+
+      const { merged, durationMs } = await processWithConcurrency(words, argv.minLen, concurrency);
+      finalStats = computeStats(merged, argv.top);
+
+      perfSummary.push({ concurrency, durationMs });
+      console.log(`✅ Completed in ${durationMs.toFixed(2)} ms\n`);
+    }
+
+    fs.mkdirSync(path.join(__dirname, 'output'), { recursive: true });
+    fs.mkdirSync(path.join(__dirname, 'logs'), { recursive: true });
+
+    fs.writeFileSync(path.join(__dirname, 'output', 'stats.json'), JSON.stringify(finalStats, null, 2));
+    fs.writeFileSync(path.join(__dirname, 'logs', 'perf-summary.json'), JSON.stringify(perfSummary, null, 2));
+
+    console.log('======================');
+    console.log('📊 Final Statistics');
+    console.log('======================');
+    console.log(`Total words:   ${finalStats.totalWords}`);
+    console.log(`Unique words:  ${finalStats.uniqueWords}`);
+    console.log(`Longest word:  ${finalStats.longestWord}`);
+    console.log(`Shortest word: ${finalStats.shortestWord}`);
+    console.log('\nTop words:');
+    finalStats.topWords.forEach((w, i) => console.log(`${i + 1}. ${w.word} (${w.count})`));
+    console.log('\nPerformance summary saved to logs/perf-summary.json');
+  } catch (err) {
+    console.error('❌ Error:', err);
+  }
+})();
