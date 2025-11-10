@@ -1,14 +1,14 @@
 [
   {
     "concurrency": 1,
-    "durationMs": 147.07859
+    "durationMs": "149.49"
   },
   {
     "concurrency": 4,
-    "durationMs": 238.28675
+    "durationMs": "132.31"
   },
   {
     "concurrency": 8,
-    "durationMs": 155.193356
+    "durationMs": "125.82"
   }
 ]

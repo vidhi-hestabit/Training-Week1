@@ -1,9 +1,9 @@
 {
-  "totalWords": 122797,
-  "uniqueWords": 38,
-  "longestWord": "reprehenderit",
-  "shortestWord": "minim",
-  "topWords": [
+  "total": 122797,
+  "unique": 38,
+  "longest": "reprehenderit",
+  "shortest": "minim",
+  "top": [
     {
       "word": "ipsum",
       "count": 3338
